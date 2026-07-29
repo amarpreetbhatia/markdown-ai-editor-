@@ -1,77 +1,29 @@
 # Markdown AI Editor
 
-Private Markdown and plain-text editing in VS Code. Markdown AI uses a local Llama 3.2 1B model for grammar cleanup and note formatting, so managed mode does not send selected text to Copilot or other cloud services.
+Refine Markdown and plain text in VS Code with a local Llama 3.2 1B model. In managed mode, the extension downloads and runs the model on your computer; selected text is not sent to Copilot or another cloud service.
 
-Select text in a Markdown or plain-text document, then run **Markdown AI: Fix Grammar & Refine** or **Markdown AI: Convert to Clean Markdown**. On first use, managed mode asks permission to download the executable local model (about 1.12 GB), binds it to `127.0.0.1`, and stops it when the extension deactivates. You can instead disable managed mode and configure an OpenAI-compatible endpoint.
+## Quick start
 
-Managed mode needs roughly 1.2 GB of disk space and at least 4 GB of RAM. Review all generated edits; the model does not verify factual accuracy. See `markdownAi.*` settings in VS Code for configuration and the included marketplace checklist before a release.
+1. Open a `.md` or plain-text file in VS Code.
+2. Select the text you want to improve.
+3. Right-click the selection and choose **Markdown AI: Fix Grammar & Refine** or **Markdown AI: Convert to Clean Markdown**. You can also run either command from the Command Palette (`Ctrl+Shift+P`).
+4. On first use, choose **Download model** when prompted. The managed model is about 1.12 GB and runs on `127.0.0.1`.
+5. Review the replacement. Use `Ctrl+Z` to undo it if needed.
 
-## Features
+Managed mode needs roughly 1.2 GB of disk space and at least 4 GB of RAM. It can take up to 90 seconds to start after the download. You may instead disable managed mode and provide an OpenAI-compatible local endpoint.
 
-## Features
+## User guide
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+Follow the complete guide at [amarpreetbhatia.github.io/markdown-ai-editor-](https://amarpreetbhatia.github.io/markdown-ai-editor-/). It covers first-run setup, commands, settings, privacy, and troubleshooting.
 
-For example if there is an image subfolder under your extension project workspace:
+## Development
 
-\!\[feature X\]\(images/feature-x.png\)
+- `npm.cmd run compile` bundles the extension for development.
+- `npm.cmd test` runs manifest and documentation checks.
+- `npm.cmd run typecheck` checks TypeScript without writing output.
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+See [Repository Guidelines](AGENTS.md) for contributor conventions.
 
-## Requirements
+## License
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
-
-## Extension Settings
-
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
-
-For example:
-
-This extension contributes the following settings:
-
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
-
-## Known Issues
-
-Calling out known issues can help limit users opening duplicate issues against your extension.
-
-## Release Notes
-
-Users appreciate release notes as you update your extension.
-
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
----
-
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+[MIT](LICENSE)

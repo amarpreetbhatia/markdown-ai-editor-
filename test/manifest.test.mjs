@@ -32,3 +32,11 @@ test('release documentation contains no VS Code scaffold placeholder', async () 
     assert.doesNotMatch(readme, /This is the README for your extension/);
     assert.match(readme, /local Llama 3\.2 1B model/);
 });
+
+test('release documentation links to the hosted user guide', async () => {
+    const readme = await readFile(path.join(root, 'README.md'), 'utf8');
+    const mkdocsConfig = await readFile(path.join(root, 'mkdocs.yml'), 'utf8');
+
+    assert.match(readme, /https:\/\/amarpreetbhatia\.github\.io\/markdown-ai-editor-\//);
+    assert.match(mkdocsConfig, /theme:\s*\n\s*name: material/);
+});

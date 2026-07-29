@@ -1,0 +1,32 @@
+site_name: Markdown AI Editor
+site_description: A practical guide to using Markdown AI Editor in Visual Studio Code.
+site_url: https://amarpreetbhatia.github.io/markdown-ai-editor-/
+repo_url: https://github.com/amarpreetbhatia/markdown-ai-editor-
+repo_name: amarpreetbhatia/markdown-ai-editor-
+
+theme:
+  name: material
+  language: en
+  features:
+    - navigation.tabs
+    - navigation.top
+    - content.code.copy
+
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.keys
+
+nav:
+  - Home: index.md
+  - First run: first-run.md
+  - Use the commands: commands.md
+  - Settings: settings.md
+  - Troubleshooting: troubleshooting.md
+  - Privacy and limitations: privacy.md
