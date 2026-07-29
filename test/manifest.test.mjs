@@ -40,3 +40,10 @@ test('release documentation links to the hosted user guide', async () => {
     assert.match(readme, /https:\/\/amarpreetbhatia\.github\.io\/markdown-ai-editor-\//);
     assert.match(mkdocsConfig, /theme:\s*\n\s*name: material/);
 });
+
+test('documentation deployment follows the repository default branch', async () => {
+    const workflow = await readFile(path.join(root, '.github', 'workflows', 'deploy-docs.yml'), 'utf8');
+
+    assert.match(workflow, /branches: \[main\]/);
+    assert.doesNotMatch(workflow, /branches: \[master\]/);
+});
