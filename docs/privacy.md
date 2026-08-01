@@ -4,7 +4,7 @@
 
 With the default managed engine, the model runs on your computer and the extension connects to it through `127.0.0.1`. Selected document text is processed locally rather than sent to Copilot or another cloud AI service.
 
-The initial model download comes from the configured HTTPS URL. The extension checks its SHA-256 digest before installation.
+The first setup downloads a pinned writing model and a platform-specific `llama-server` runtime over HTTPS. The extension checks the SHA-256 digest of each file before installation. The model and runtime are downloaded after you approve setup; neither is embedded in the extension package.
 
 ## Custom endpoints
 

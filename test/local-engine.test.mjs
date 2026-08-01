@@ -5,11 +5,12 @@ import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const source = await readFile(path.join(root, 'src', 'localEngine.ts'), 'utf8');
+const source = await readFile(path.join(root, 'src', 'managedEngine.ts'), 'utf8');
 
-test('managed engine reports download stalls and startup progress', () => {
-    assert.match(source, /DOWNLOAD_STALL_TIMEOUT_MS\s*=\s*30_000/);
-    assert.match(source, /downloaded.*formatBytes\(speed\).*\/s/);
-    assert.match(source, /Starting local model/);
+test('managed engine verifies resumable downloads and starts a separate runtime', () => {
+    assert.match(source, /connectionTimeoutMs\s*=\s*30_000/);
+    assert.match(source, /Range: `bytes=\$\{offset\}-`/);
+    assert.match(source, /failed its security checksum verification/);
+    assert.match(source, /spawn\(executable, \['--model'/);
     assert.match(source, /\.download/);
 });

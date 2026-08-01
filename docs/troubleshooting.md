@@ -6,11 +6,11 @@ Select text first and check that the active file is Markdown or plain text. You 
 
 ## I declined the download
 
-Run a Markdown AI command again and select **Download model**. Or select **Use custom endpoint** and configure `markdownAi.useManagedEngine` as described in [Settings](settings.md).
+Use **Markdown AI: Show Local Model Status** and choose retry when available. Or select **Use custom endpoint** and configure `markdownAi.useManagedEngine` as described in [Settings](settings.md).
 
 ## The download or integrity check fails
 
-Check your internet connection and free disk space, then run the command again. Do not change the model URL or SHA-256 setting unless you trust the source and know the digest that belongs to that exact file.
+Check your internet connection and free disk space, then use **Markdown AI: Show Local Model Status** to retry. The managed model and runtime URLs are pinned and checksum-verified, so do not replace their files manually.
 
 ## The local model does not start
 

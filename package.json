@@ -2,7 +2,7 @@
   "name": "markdown-ai-editor",
   "displayName": "Markdown AI Editor",
   "description": "Private, local Markdown and plain-text editing with a lightweight on-device AI model.",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "publisher": "AmarpreetBhatia",
   "license": "SEE LICENSE IN LICENSE",
   "pricing": "Free",
@@ -39,6 +39,10 @@
       {
         "command": "markdownAi.formatNotes",
         "title": "Markdown AI: Convert to Clean Markdown"
+      },
+      {
+        "command": "markdownAi.showLocalModelStatus",
+        "title": "Markdown AI: Show Local Model Status"
       }
     ],
     "menus": {
@@ -61,17 +65,7 @@
         "markdownAi.useManagedEngine": {
           "type": "boolean",
           "default": true,
-          "description": "Download and run the local model after you approve its first-use download (about 1.12 GB)."
-        },
-        "markdownAi.managedModelUrl": {
-          "type": "string",
-          "default": "https://huggingface.co/mozilla-ai/Llama-3.2-1B-Instruct-llamafile/resolve/main/Llama-3.2-1B-Instruct-Q4_K_M.llamafile",
-          "markdownDescription": "HTTPS URL for the managed, executable model. Change only to a trusted source."
-        },
-        "markdownAi.managedModelSha256": {
-          "type": "string",
-          "default": "ac1c2864000bad7f62ee56ee908d3f55dd051a267d015b15fa6e831e69767b55",
-          "markdownDescription": "Required SHA-256 digest for the managed model download. Update this when changing the model URL."
+          "description": "Download and run a local English writing assistant after you approve its first-use download (about 271 MB). It works offline after setup, preserves Markdown where possible, and may make mistakes."
         },
         "markdownAi.customApiBaseUrl": {
           "type": "string",
@@ -80,7 +74,7 @@
         },
         "markdownAi.model": {
           "type": "string",
-          "default": "Llama-3.2-1B-Instruct",
+          "default": "SmolLM2-360M-Instruct-Q4_K_M",
           "description": "Model name passed in API requests."
         }
       }

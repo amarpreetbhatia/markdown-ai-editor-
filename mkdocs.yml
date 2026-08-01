@@ -26,6 +26,8 @@ markdown_extensions:
 nav:
   - Home: index.md
   - First run: first-run.md
+  - Managed local model: local-model.md
+  - Use Ollama locally: ollama.md
   - Use the commands: commands.md
   - Settings: settings.md
   - Troubleshooting: troubleshooting.md

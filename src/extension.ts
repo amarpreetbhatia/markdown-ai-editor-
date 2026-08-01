@@ -1,7 +1,9 @@
 import * as vscode from 'vscode';
-import { startManagedEngine, stopManagedEngine } from './localEngine';
+import { registerManagedEngine, showManagedEngineStatus, startManagedEngine, stopManagedEngine } from './managedEngine';
 
 export async function activate(context: vscode.ExtensionContext) {
+  registerManagedEngine(context);
+  const statusDisposable = vscode.commands.registerCommand('markdownAi.showLocalModelStatus', () => showManagedEngineStatus(context));
   // Register Command: Fix Grammar
   const fixGrammarDisposable = vscode.commands.registerCommand('markdownAi.fixGrammar', async () => {
     await processSelectedText(
@@ -18,7 +20,7 @@ export async function activate(context: vscode.ExtensionContext) {
     );
   });
 
-  context.subscriptions.push(fixGrammarDisposable, formatNotesDisposable);
+  context.subscriptions.push(fixGrammarDisposable, formatNotesDisposable, statusDisposable);
 }
 
 /**
