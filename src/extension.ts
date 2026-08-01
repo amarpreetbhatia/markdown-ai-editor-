@@ -26,7 +26,7 @@ export async function activate(context: vscode.ExtensionContext) {
  */
 async function getApiBaseUrl(context: vscode.ExtensionContext): Promise<string> {
   const config = vscode.workspace.getConfiguration('markdownAi');
-  const useManaged = config.get<boolean>('useManagedEngine', true);
+  const useManaged = config.get<boolean>('useManagedEngine', true); 
 
   if (useManaged) {
     return await startManagedEngine(context);

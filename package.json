@@ -3,7 +3,17 @@
   "displayName": "Markdown AI Editor",
   "description": "Private, local Markdown and plain-text editing with a lightweight on-device AI model.",
   "version": "0.0.1",
-  "publisher": "local-dev",
+  "publisher": "AmarpreetBhatia",
+  "license": "SEE LICENSE IN LICENSE",
+  "pricing": "Free",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/amarpreetbhatia/markdown-ai-editor-.git"
+  },
+  "bugs": {
+    "url": "https://github.com/amarpreetbhatia/markdown-ai-editor-/issues"
+  },
+  "homepage": "https://amarpreetbhatia.github.io/markdown-ai-editor-/",
   "categories": [
     "Formatters",
     "Machine Learning"

@@ -10,6 +10,7 @@ import * as vscode from 'vscode';
 const DEFAULT_MODEL_URL = 'https://huggingface.co/mozilla-ai/Llama-3.2-1B-Instruct-llamafile/resolve/main/Llama-3.2-1B-Instruct-Q4_K_M.llamafile';
 const DEFAULT_MODEL_SHA256 = 'ac1c2864000bad7f62ee56ee908d3f55dd051a267d015b15fa6e831e69767b55';
 const MIN_MODEL_BYTES = 100 * 1024 * 1024;
+const DOWNLOAD_STALL_TIMEOUT_MS = 30_000;
 const START_TIMEOUT_MS = 90_000;
 let processRef: ChildProcess | undefined;
 let port: number | undefined;
@@ -34,6 +35,13 @@ function freePort(): Promise<number> {
             server.close((error) => error ? reject(error) : typeof address === 'object' && address ? resolve(address.port) : reject(new Error('Could not reserve a local port.')));
         });
     });
+}
+
+function formatBytes(bytes: number): string {
+    if (bytes < 1024 * 1024) {
+        return `${Math.round(bytes / 1024)} KB`;
+    }
+    return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 }
 
 async function ensureModel(context: vscode.ExtensionContext): Promise<string> {
@@ -72,25 +80,95 @@ async function ensureModel(context: vscode.ExtensionContext): Promise<string> {
     }
     await fs.promises.mkdir(path.dirname(modelPath), { recursive: true });
     const temporaryPath = `${modelPath}.download`;
-    await fs.promises.rm(temporaryPath, { force: true });
+    const existingDownloadSize = fs.existsSync(temporaryPath) ? (await fs.promises.stat(temporaryPath)).size : 0;
     try {
         await vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: 'Markdown AI: Downloading local model…', cancellable: true }, async (progress, token) => {
             const controller = new AbortController();
-            token.onCancellationRequested(() => controller.abort());
-            const response = await fetch(url, { signal: controller.signal, redirect: 'follow' });
+            let cancelled = false;
+            let stalled = false;
+            let stallTimer: ReturnType<typeof setTimeout> | undefined;
+            token.onCancellationRequested(() => {
+                cancelled = true;
+                controller.abort();
+            });
+            const requestHeaders: Record<string, string> = existingDownloadSize > 0 ? { Range: `bytes=${existingDownloadSize}-` } : {};
+            let responseTimer: ReturnType<typeof setTimeout> | undefined = setTimeout(() => {
+                stalled = true;
+                controller.abort();
+            }, DOWNLOAD_STALL_TIMEOUT_MS);
+            let response: Response;
+            try {
+                response = await fetch(url, { signal: controller.signal, redirect: 'follow', headers: requestHeaders });
+            } catch (error) {
+                if (cancelled) {
+                    throw new Error('Model download was canceled. Run the command again to resume it.');
+                }
+                if (stalled) {
+                    throw new Error(`Model download stalled for ${DOWNLOAD_STALL_TIMEOUT_MS / 1000} seconds before receiving data. Check your connection and try again.`);
+                }
+                throw error;
+            } finally {
+                if (responseTimer) {
+                    clearTimeout(responseTimer);
+                    responseTimer = undefined;
+                }
+            }
+            if (response.status === 416 && existingDownloadSize > 0) {
+                await fs.promises.rm(temporaryPath, { force: true });
+                throw new Error('The partial model download could not be resumed. Run the command again to restart it.');
+            }
             if (!response.ok || !response.body) {
                 throw new Error(`Model download failed with HTTP ${response.status}.`);
             }
-            const total = Number(response.headers.get('content-length'));
-            let received = 0;
+            const append = existingDownloadSize > 0 && response.status === 206;
+            const startingBytes = append ? existingDownloadSize : 0;
+            const responseBytes = Number(response.headers.get('content-length'));
+            const total = Number.isFinite(responseBytes) && responseBytes > 0 ? startingBytes + responseBytes : undefined;
+            let received = startingBytes;
+            let lastReportedBytes = startingBytes;
+            let lastReportAt = Date.now();
+            progress.report({ message: `${append ? 'Resuming' : 'Downloading'} model: ${formatBytes(received)} downloaded` });
+            const resetStallTimer = () => {
+                if (stallTimer) {
+                    clearTimeout(stallTimer);
+                }
+                stallTimer = setTimeout(() => {
+                    stalled = true;
+                    controller.abort();
+                }, DOWNLOAD_STALL_TIMEOUT_MS);
+            };
+            resetStallTimer();
             const meter = new TransformStream<Uint8Array, Uint8Array>({
-                transform(chunk, controller) {
+                transform(chunk, transformController) {
+                    resetStallTimer();
                     received += chunk.byteLength;
-                    progress.report(Number.isFinite(total) && total > 0 ? { increment: (chunk.byteLength / total) * 100 } : { message: `${Math.round(received / 1024 / 1024)} MB downloaded` });
-                    controller.enqueue(chunk);
+                    const now = Date.now();
+                    if (now - lastReportAt >= 500) {
+                        const seconds = Math.max((now - lastReportAt) / 1000, 0.001);
+                        const speed = (received - lastReportedBytes) / seconds;
+                        const percentage = total ? ` (${Math.floor((received / total) * 100)}%)` : '';
+                        progress.report({ message: `${formatBytes(received)} downloaded${percentage} (${formatBytes(speed)}/s)` });
+                        lastReportedBytes = received;
+                        lastReportAt = now;
+                    }
+                    transformController.enqueue(chunk);
                 },
             });
-            await pipeline(Readable.fromWeb(response.body as never), meter.readable as never, fs.createWriteStream(temporaryPath));
+            try {
+                await pipeline(Readable.fromWeb(response.body as never), meter.readable as never, fs.createWriteStream(temporaryPath, { flags: append ? 'a' : 'w' }));
+            } catch (error) {
+                if (cancelled) {
+                    throw new Error('Model download was canceled. Run the command again to resume it.');
+                }
+                if (stalled) {
+                    throw new Error(`Model download stalled for ${DOWNLOAD_STALL_TIMEOUT_MS / 1000} seconds. Check your connection and try again to resume it.`);
+                }
+                throw error;
+            } finally {
+                if (stallTimer) {
+                    clearTimeout(stallTimer);
+                }
+            }
         });
         if ((await fs.promises.stat(temporaryPath)).size < MIN_MODEL_BYTES) {
             throw new Error('Downloaded model is unexpectedly small and was not installed.');
@@ -110,13 +188,13 @@ async function ensureModel(context: vscode.ExtensionContext): Promise<string> {
         await fs.promises.writeFile(installedMarker, JSON.stringify({ source: url.toString(), sha256: expectedSha256, installedAt: new Date().toISOString() }), 'utf8');
         return modelPath;
     } catch (error) {
-        await fs.promises.rm(temporaryPath, { force: true });
         throw error;
     }
 }
 
-async function waitForServer(baseUrl: string, child: ChildProcess): Promise<void> {
+async function waitForServer(baseUrl: string, child: ChildProcess, progress: vscode.Progress<{ message?: string }>): Promise<void> {
     const deadline = Date.now() + START_TIMEOUT_MS;
+    const startedAt = Date.now();
     while (Date.now() < deadline) {
         if (child.exitCode !== null || child.killed) {
             throw new Error(`Local model stopped during startup (${child.exitCode ?? 'terminated'}).`);
@@ -126,32 +204,37 @@ async function waitForServer(baseUrl: string, child: ChildProcess): Promise<void
                 return;
             }
         } catch { /* Server is still starting. */ }
+        progress.report({ message: `Starting local model… ${Math.floor((Date.now() - startedAt) / 1000)}s` });
         await new Promise<void>((resolve) => setTimeout(resolve, 500));
     }
     throw new Error('Local model did not become ready within 90 seconds.');
 }
 
 async function start(context: vscode.ExtensionContext): Promise<string> {
-    const modelPath = await ensureModel(context);
-    const localPort = await freePort();
-    const baseUrl = `http://127.0.0.1:${localPort}/v1`;
-    const child = spawn(modelPath, ['--server', '--nobrowser', '--host', '127.0.0.1', '--port', String(localPort), '--ctx-size', '4096'], { windowsHide: true, stdio: ['ignore', 'ignore', 'pipe'] });
-    processRef = child;
-    port = localPort;
-    child.stderr?.on('data', (data: Buffer) => console.debug(`[Markdown AI engine] ${data.toString()}`));
-    child.once('exit', () => {
-        if (processRef === child) {
-            processRef = undefined;
-            port = undefined;
+    return vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: 'Markdown AI: Preparing local model…', cancellable: false }, async (progress) => {
+        progress.report({ message: 'Checking local model…' });
+        const modelPath = await ensureModel(context);
+        progress.report({ message: 'Starting local model…' });
+        const localPort = await freePort();
+        const baseUrl = `http://127.0.0.1:${localPort}/v1`;
+        const child = spawn(modelPath, ['--server', '--nobrowser', '--host', '127.0.0.1', '--port', String(localPort), '--ctx-size', '4096'], { windowsHide: true, stdio: ['ignore', 'ignore', 'pipe'] });
+        processRef = child;
+        port = localPort;
+        child.stderr?.on('data', (data: Buffer) => console.debug(`[Markdown AI engine] ${data.toString()}`));
+        child.once('exit', () => {
+            if (processRef === child) {
+                processRef = undefined;
+                port = undefined;
+            }
+        });
+        try {
+            await waitForServer(baseUrl, child, progress);
+            return baseUrl;
+        } catch (error) {
+            child.kill();
+            throw error;
         }
     });
-    try {
-        await waitForServer(baseUrl, child);
-        return baseUrl;
-    } catch (error) {
-        child.kill();
-        throw error;
-    }
 }
 
 export async function startManagedEngine(context: vscode.ExtensionContext): Promise<string> {

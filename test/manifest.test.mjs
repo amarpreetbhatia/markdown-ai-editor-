@@ -27,6 +27,15 @@ test('managed model defaults are explicit and use a trusted HTTPS source', () =>
     assert.match(settings['markdownAi.useManagedEngine'].description, /1\.12 GB/);
 });
 
+test('manifest identifies the Marketplace release and its public resources', () => {
+    assert.equal(packageJson.publisher, 'AmarpreetBhatia');
+    assert.equal(packageJson.license, 'SEE LICENSE IN LICENSE');
+    assert.equal(packageJson.pricing, 'Free');
+    assert.equal(packageJson.repository.url, 'https://github.com/amarpreetbhatia/markdown-ai-editor-.git');
+    assert.equal(packageJson.bugs.url, 'https://github.com/amarpreetbhatia/markdown-ai-editor-/issues');
+    assert.equal(packageJson.homepage, 'https://amarpreetbhatia.github.io/markdown-ai-editor-/');
+});
+
 test('release documentation contains no VS Code scaffold placeholder', async () => {
     const readme = await readFile(path.join(root, 'README.md'), 'utf8');
     assert.doesNotMatch(readme, /This is the README for your extension/);

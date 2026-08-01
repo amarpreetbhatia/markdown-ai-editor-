@@ -15,3 +15,8 @@ test/**
 **/*.map
 **/*.ts
 **/.vscode-test.*
+.github/**
+docs/**
+site/**
+mkdocs.yml
+requirements-docs.txt
