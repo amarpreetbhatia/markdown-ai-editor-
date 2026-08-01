@@ -56,3 +56,12 @@ test('documentation deployment follows the repository default branch', async () 
     assert.match(workflow, /branches: \[main\]/);
     assert.doesNotMatch(workflow, /branches: \[master\]/);
 });
+
+test('documentation deployment uses Node 24-compatible Pages actions', async () => {
+    const workflow = await readFile(path.join(root, '.github', 'workflows', 'deploy-docs.yml'), 'utf8');
+
+    assert.match(workflow, /actions\/configure-pages@v6/);
+    assert.match(workflow, /actions\/upload-pages-artifact@v5/);
+    assert.match(workflow, /actions\/deploy-pages@v5/);
+    assert.doesNotMatch(workflow, /actions\/(configure-pages|upload-pages-artifact|deploy-pages)@v[1-4]\b/);
+});

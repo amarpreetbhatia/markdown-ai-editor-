@@ -22,6 +22,25 @@ Follow the complete guide at [amarpreetbhatia.github.io/markdown-ai-editor-](htt
 - `npm.cmd test` runs manifest and documentation checks.
 - `npm.cmd run typecheck` checks TypeScript without writing output.
 
+
+ ## Generate Manual
+  `npm install`
+   `npm test`
+  `npm run typecheck`
+  `npm run package`
+  `npm.cmd exec --yes --package @vscode/vsce -- vsce package --no-dependencies`
+
+  This creates:
+
+  markdown-ai-editor-0.0.1.vsix
+
+  Install it locally:
+
+  code.cmd --install-extension .\markdown-ai-editor-0.0.1.vsix
+
+  Or in VS Code: Extensions → ... → Install from VSIX...
+
+
 See [Repository Guidelines](AGENTS.md) for contributor conventions.
 
 ## License
