@@ -7,16 +7,43 @@ import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const packageJson = JSON.parse(await readFile(path.join(root, 'package.json'), 'utf8'));
 
-test('manifest exposes local Markdown AI commands for Markdown and plain text', () => {
-    const commands = packageJson.contributes.commands.map((command) => command.command);
-    assert.deepEqual(commands, ['markdownAi.fixGrammar', 'markdownAi.formatNotes', 'markdownAi.showLocalModelStatus']);
+test('manifest exposes the Markdown AI workflow commands in the editor context menu', () => {
+    const commands = packageJson.contributes.commands;
+    assert.deepEqual(commands.map((command) => command.command), [
+        'markdownAi.fixGrammar',
+        'markdownAi.formatNotes',
+        'markdownAi.showLocalModelStatus',
+        'markdownAi.structureMarkdown',
+        'markdownAi.makeSkill',
+        'markdownAi.createPrd',
+    ]);
+    assert.deepEqual(commands.slice(-3).map(({ command, title }) => ({ command, title })), [
+        { command: 'markdownAi.structureMarkdown', title: 'Markdown AI: Structure as Clean Markdown' },
+        { command: 'markdownAi.makeSkill', title: 'Markdown AI: Make a Skill' },
+        { command: 'markdownAi.createPrd', title: 'Markdown AI: Create PRD' },
+    ]);
     assert.ok(packageJson.activationEvents.includes('onLanguage:markdown'));
     assert.ok(packageJson.activationEvents.includes('onLanguage:plaintext'));
-    for (const item of packageJson.contributes.menus['editor/context']) {
+    const workflowCommands = new Set([
+        'markdownAi.structureMarkdown',
+        'markdownAi.makeSkill',
+        'markdownAi.createPrd',
+    ]);
+    for (const item of packageJson.contributes.menus['editor/context'].filter((item) => workflowCommands.has(item.command))) {
         assert.match(item.when, /editorHasSelection/);
         assert.match(item.when, /resourceLangId == markdown/);
         assert.match(item.when, /resourceLangId == plaintext/);
+        assert.match(item.group, /^1_modification@/);
     }
+});
+
+test('manifest binds Markdown AI workflow chords for Windows, Linux, and macOS', () => {
+    assert.deepEqual(packageJson.contributes.keybindings, [
+        { command: 'markdownAi.fixGrammar', key: 'ctrl+m f', mac: 'cmd+m f', when: 'editorTextFocus && (resourceLangId == markdown || resourceLangId == plaintext)' },
+        { command: 'markdownAi.formatNotes', key: 'ctrl+m c', mac: 'cmd+m c', when: 'editorTextFocus && (resourceLangId == markdown || resourceLangId == plaintext)' },
+        { command: 'markdownAi.makeSkill', key: 'ctrl+m s', mac: 'cmd+m s', when: 'editorTextFocus && (resourceLangId == markdown || resourceLangId == plaintext)' },
+        { command: 'markdownAi.createPrd', key: 'ctrl+m p', mac: 'cmd+m p', when: 'editorTextFocus && (resourceLangId == markdown || resourceLangId == plaintext)' },
+    ]);
 });
 
 test('managed model setup is enabled with clear first-run guidance', () => {
