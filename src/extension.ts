@@ -8,6 +8,7 @@ export async function activate(context: vscode.ExtensionContext) {
   const fixGrammarDisposable = vscode.commands.registerCommand('markdownAi.fixGrammar', async () => {
     await processSelectedText(
       context,
+      'Fix Grammar & Refine',
       'You are an expert editor. Fix all spelling, grammar, and typos in the text. Improve clarity while preserving the original meaning and markdown formatting. Return ONLY the revised text with no intro, outro, or conversational remarks.'
     );
   });
@@ -16,6 +17,7 @@ export async function activate(context: vscode.ExtensionContext) {
   const formatNotesDisposable = vscode.commands.registerCommand('markdownAi.formatNotes', async () => {
     await processSelectedText(
       context,
+      'Convert to Clean Markdown',
       'You are a Markdown formatting assistant. Structure the raw notes using bullet points, bolding key concepts, and clear headers where appropriate. Return ONLY the formatted Markdown text with no explanations.'
     );
   });
@@ -38,19 +40,54 @@ async function getApiBaseUrl(context: vscode.ExtensionContext): Promise<string> 
 }
 
 /**
- * Executes AI API request on selected text and applies edits.
+ * Resolves the selected text, or confirms replacing the entire document.
  */
-async function processSelectedText(context: vscode.ExtensionContext, systemPrompt: string) {
+export async function getTargetText(editor: vscode.TextEditor): Promise<{ text: string; range: vscode.Range } | undefined> {
+  const selection = editor.selection;
+  if (!selection.isEmpty) {
+    return { text: editor.document.getText(selection), range: selection };
+  }
+
+  const choice = await vscode.window.showWarningMessage(
+    'No text is selected. Do you want to transform the entire document?',
+    'Transform entire document',
+    'Cancel'
+  );
+
+  if (choice !== 'Transform entire document') {
+    return undefined;
+  }
+
+  const text = editor.document.getText();
+  return {
+    text,
+    range: new vscode.Range(
+      editor.document.positionAt(0),
+      editor.document.positionAt(text.length)
+    ),
+  };
+}
+
+/**
+ * Executes an AI API request for selected text and applies one replacement edit.
+ */
+export async function processSelectedText(
+  context: vscode.ExtensionContext,
+  title: string,
+  systemPrompt: string
+): Promise<void> {
   const editor = vscode.window.activeTextEditor;
   if (!editor) {
     vscode.window.showWarningMessage('No active text editor found.');
     return;
   }
 
-  const selection = editor.selection;
-  const targetText = editor.document.getText(selection.isEmpty ? undefined : selection);
+  const target = await getTargetText(editor);
+  if (!target) {
+    return;
+  }
 
-  if (!targetText || targetText.trim().length === 0) {
+  if (!target.text || target.text.trim().length === 0) {
     vscode.window.showInformationMessage('Please select text to process.');
     return;
   }
@@ -61,7 +98,7 @@ async function processSelectedText(context: vscode.ExtensionContext, systemPromp
   await vscode.window.withProgress(
     {
       location: vscode.ProgressLocation.Notification,
-      title: 'Markdown AI: Processing text...',
+      title: `Markdown AI: ${title}`,
       cancellable: true,
     },
     async (progress, token) => {
@@ -79,7 +116,7 @@ async function processSelectedText(context: vscode.ExtensionContext, systemPromp
             model: model,
             messages: [
               { role: 'system', content: systemPrompt },
-              { role: 'user', content: targetText },
+              { role: 'user', content: target.text },
             ],
             temperature: 0.1,
           }),
@@ -98,15 +135,8 @@ async function processSelectedText(context: vscode.ExtensionContext, systemPromp
           throw new Error('Received empty response from local model.');
         }
 
-        const targetRange = selection.isEmpty
-          ? new vscode.Range(
-              editor.document.positionAt(0),
-              editor.document.positionAt(editor.document.getText().length)
-            )
-          : selection;
-
         await editor.edit((editBuilder) => {
-          editBuilder.replace(targetRange, resultText);
+          editBuilder.replace(target.range, resultText);
         });
 
         vscode.window.setStatusBarMessage('✨ Text updated by local AI', 3000);
