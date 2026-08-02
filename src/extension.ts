@@ -39,6 +39,17 @@ async function getApiBaseUrl(context: vscode.ExtensionContext): Promise<string> 
   }
 }
 
+function throwIfCanceled(token: vscode.CancellationToken, controller: AbortController): void {
+  if (!token.isCancellationRequested) {
+    return;
+  }
+
+  controller.abort();
+  const error = new Error('Operation canceled.');
+  error.name = 'AbortError';
+  throw error;
+}
+
 /**
  * Resolves the selected text, or confirms replacing the entire document.
  */
@@ -102,11 +113,13 @@ export async function processSelectedText(
       cancellable: true,
     },
     async (progress, token) => {
+      const controller = new AbortController();
+      const cancellationDisposable = token.onCancellationRequested(() => controller.abort());
+
       try {
         const apiBaseUrl = await getApiBaseUrl(context);
+        throwIfCanceled(token, controller);
         console.log(`Using API Base URL: ${apiBaseUrl}`);
-        const controller = new AbortController();
-        token.onCancellationRequested(() => controller.abort());
 
         const response = await fetch(`${apiBaseUrl.replace(/\/$/, '')}/chat/completions`, {
           method: 'POST',
@@ -135,6 +148,7 @@ export async function processSelectedText(
           throw new Error('Received empty response from local model.');
         }
 
+        throwIfCanceled(token, controller);
         await editor.edit((editBuilder) => {
           editBuilder.replace(target.range, resultText);
         });
@@ -147,6 +161,8 @@ export async function processSelectedText(
           const msg = error instanceof Error ? error.message : String(error);
           vscode.window.showErrorMessage(`Markdown AI Error: ${msg}`);
         }
+      } finally {
+        cancellationDisposable.dispose();
       }
     }
   );
