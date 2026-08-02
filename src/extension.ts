@@ -1,28 +1,64 @@
 import * as vscode from 'vscode';
 import { registerManagedEngine, showManagedEngineStatus, startManagedEngine, stopManagedEngine } from './managedEngine';
 
+export const TRANSFORMATION_PROMPTS = {
+  fixGrammar: `You are an expert English editor working with Markdown. Correct spelling, grammar, punctuation, and clarity while preserving the author's meaning, source facts, and Markdown structure. Do not invent, remove, or alter factual information. Return only transformed Markdown with no introduction, explanation, or commentary outside the result.`,
+  cleanMarkdown: `You are a Markdown formatting assistant. Transform the supplied content into clean, readable Markdown with sensible headings, lists, emphasis, spacing, and hierarchy while preserving its meaning, source facts, and existing Markdown structure where appropriate. Do not invent missing information or add commentary. Return only transformed Markdown with no introduction, explanation, or commentary outside the result.`,
+  skill: `Create a standalone SKILL.md from the supplied content, following the VS Code skill format. Start with YAML frontmatter containing a concise name and description, then provide a reusable workflow with clear steps, decisions, and quality checks. Preserve source facts and do not invent missing details; express missing details as questions or assumptions when they are necessary. Return only transformed Markdown with no introduction, explanation, or commentary outside the result.`,
+  prd: `Create a practical Markdown product requirements document from the supplied content. Include clearly labeled sections for problem statement, goals, non-goals, users, requirements, user stories, acceptance criteria, risks, and open questions. Preserve source facts, do not invent missing information, and use explicit assumptions or open questions where details are absent. Return only transformed Markdown with no introduction, explanation, or commentary outside the result.`,
+} as const;
+
 export async function activate(context: vscode.ExtensionContext) {
   registerManagedEngine(context);
   const statusDisposable = vscode.commands.registerCommand('markdownAi.showLocalModelStatus', () => showManagedEngineStatus(context));
-  // Register Command: Fix Grammar
   const fixGrammarDisposable = vscode.commands.registerCommand('markdownAi.fixGrammar', async () => {
     await processSelectedText(
       context,
       'Fix Grammar & Refine',
-      'You are an expert editor. Fix all spelling, grammar, and typos in the text. Improve clarity while preserving the original meaning and markdown formatting. Return ONLY the revised text with no intro, outro, or conversational remarks.'
+      TRANSFORMATION_PROMPTS.fixGrammar
     );
   });
 
-  // Register Command: Format Notes
   const formatNotesDisposable = vscode.commands.registerCommand('markdownAi.formatNotes', async () => {
     await processSelectedText(
       context,
       'Convert to Clean Markdown',
-      'You are a Markdown formatting assistant. Structure the raw notes using bullet points, bolding key concepts, and clear headers where appropriate. Return ONLY the formatted Markdown text with no explanations.'
+      TRANSFORMATION_PROMPTS.cleanMarkdown
     );
   });
 
-  context.subscriptions.push(fixGrammarDisposable, formatNotesDisposable, statusDisposable);
+  const structureMarkdownDisposable = vscode.commands.registerCommand('markdownAi.structureMarkdown', async () => {
+    await processSelectedText(
+      context,
+      'Structure as Clean Markdown',
+      TRANSFORMATION_PROMPTS.cleanMarkdown
+    );
+  });
+
+  const makeSkillDisposable = vscode.commands.registerCommand('markdownAi.makeSkill', async () => {
+    await processSelectedText(
+      context,
+      'Make a Skill',
+      TRANSFORMATION_PROMPTS.skill
+    );
+  });
+
+  const createPrdDisposable = vscode.commands.registerCommand('markdownAi.createPrd', async () => {
+    await processSelectedText(
+      context,
+      'Create PRD',
+      TRANSFORMATION_PROMPTS.prd
+    );
+  });
+
+  context.subscriptions.push(
+    fixGrammarDisposable,
+    formatNotesDisposable,
+    structureMarkdownDisposable,
+    makeSkillDisposable,
+    createPrdDisposable,
+    statusDisposable
+  );
 }
 
 /**
