@@ -1,150 +1,157 @@
 {
-  "name": "markdown-ai-editor",
-  "displayName": "Markdown AI Editor",
-  "description": "Private, local Markdown and plain-text editing with a lightweight on-device AI model.",
-  "version": "0.0.2",
-  "publisher": "AmarpreetBhatia",
-  "license": "SEE LICENSE IN LICENSE",
-  "pricing": "Free",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/amarpreetbhatia/markdown-ai-editor-.git"
-  },
-  "bugs": {
-    "url": "https://github.com/amarpreetbhatia/markdown-ai-editor-/issues"
-  },
-  "homepage": "https://amarpreetbhatia.github.io/markdown-ai-editor-/",
-  "categories": [
-    "Formatters",
-    "Machine Learning"
-  ],
-  "keywords": ["markdown", "writing", "grammar", "local ai", "offline", "privacy"],
-  "icon": "media/icon.png",
-  "main": "./dist/extension.js",
-  "engines": {
-    "vscode": "^1.85.0"
-  },
-  "activationEvents": [
-    "onCommand:markdownAi.fixGrammar",
-    "onCommand:markdownAi.formatNotes",
-    "onLanguage:markdown",
-    "onLanguage:plaintext"
-  ],
-  "contributes": {
-    "commands": [
-      {
-        "command": "markdownAi.fixGrammar",
-        "title": "Markdown AI: Fix Grammar & Refine"
-      },
-      {
-        "command": "markdownAi.formatNotes",
-        "title": "Markdown AI: Convert to Clean Markdown"
-      },
-      {
-        "command": "markdownAi.showLocalModelStatus",
-        "title": "Markdown AI: Show Local Model Status"
-      },
-      {
-        "command": "markdownAi.structureMarkdown",
-        "title": "Markdown AI: Structure as Clean Markdown"
-      },
-      {
-        "command": "markdownAi.makeSkill",
-        "title": "Markdown AI: Make a Skill"
-      },
-      {
-        "command": "markdownAi.createPrd",
-        "title": "Markdown AI: Create PRD"
-      }
-    ],
-    "menus": {
-      "editor/context": [
-        {
-          "command": "markdownAi.fixGrammar",
-          "when": "editorHasSelection && (resourceLangId == markdown || resourceLangId == plaintext)",
-          "group": "1_modification@1"
-        },
-        {
-          "command": "markdownAi.formatNotes",
-          "when": "editorHasSelection && (resourceLangId == markdown || resourceLangId == plaintext)",
-          "group": "1_modification@2"
-        },
-        {
-          "command": "markdownAi.structureMarkdown",
-          "when": "editorHasSelection && (resourceLangId == markdown || resourceLangId == plaintext)",
-          "group": "1_modification@3"
-        },
-        {
-          "command": "markdownAi.makeSkill",
-          "when": "editorHasSelection && (resourceLangId == markdown || resourceLangId == plaintext)",
-          "group": "1_modification@4"
-        },
-        {
-          "command": "markdownAi.createPrd",
-          "when": "editorHasSelection && (resourceLangId == markdown || resourceLangId == plaintext)",
-          "group": "1_modification@5"
-        }
-      ]
-    },
-    "keybindings": [
-        {
-          "command": "markdownAi.fixGrammar",
-          "key": "ctrl+m f",
-          "mac": "cmd+m f",
-          "when": "editorTextFocus && (resourceLangId == markdown || resourceLangId == plaintext)"
-        },
-        {
-          "command": "markdownAi.formatNotes",
-          "key": "ctrl+m c",
-          "mac": "cmd+m c",
-          "when": "editorTextFocus && (resourceLangId == markdown || resourceLangId == plaintext)"
-        },
-        {
-          "command": "markdownAi.makeSkill",
-          "key": "ctrl+m s",
-          "mac": "cmd+m s",
-          "when": "editorTextFocus && (resourceLangId == markdown || resourceLangId == plaintext)"
-        },
-        {
-          "command": "markdownAi.createPrd",
-          "key": "ctrl+m p",
-          "mac": "cmd+m p",
-          "when": "editorTextFocus && (resourceLangId == markdown || resourceLangId == plaintext)"
-        }
-      ],
-    "configuration": {
-      "title": "Markdown AI Editor",
-      "properties": {
-        "markdownAi.useManagedEngine": {
-          "type": "boolean",
-          "default": true,
-          "description": "Download and run a local English writing assistant after you approve its first-use download (about 271 MB). It works offline after setup, preserves Markdown where possible, and may make mistakes."
-        },
-        "markdownAi.customApiBaseUrl": {
-          "type": "string",
-          "default": "http://127.0.0.1:8080/v1",
-          "description": "Custom endpoint URL if 'useManagedEngine' is set to false."
-        },
-        "markdownAi.model": {
-          "type": "string",
-          "default": "SmolLM2-360M-Instruct-Q4_K_M",
-          "description": "Model name passed in API requests."
-        }
-      }
-    }
-  },
-  "scripts": {
-    "vscode:prepublish": "npm run package",
-    "compile": "node esbuild.js",
-    "watch": "node esbuild.js --watch",
-    "package": "node esbuild.js --production",
-    "typecheck": "tsc --noEmit",
-    "test": "node --test test/*.test.mjs"
-  },
-  "devDependencies": {
-    "@types/node": "^20.0.0",
-    "@types/vscode": "^1.85.0",
-    "esbuild": "^0.20.0",
-    "typescript": "^5.3.0"
-  }
+    "name":  "markdown-ai-editor",
+    "displayName":  "Markdown AI Editor",
+    "description":  "Private, local Markdown and plain-text editing with a lightweight on-device AI model.",
+    "version":  "0.0.2",
+    "publisher":  "AmarpreetBhatia",
+    "license":  "SEE LICENSE IN LICENSE",
+    "pricing":  "Free",
+    "repository":  {
+                       "type":  "git",
+                       "url":  "https://github.com/amarpreetbhatia/markdown-ai-editor-.git"
+                   },
+    "bugs":  {
+                 "url":  "https://github.com/amarpreetbhatia/markdown-ai-editor-/issues"
+             },
+    "homepage":  "https://amarpreetbhatia.github.io/markdown-ai-editor-/",
+    "categories":  [
+                       "Formatters",
+                       "Machine Learning"
+                   ],
+    "keywords":  [
+                     "markdown",
+                     "writing",
+                     "grammar",
+                     "local ai",
+                     "offline",
+                     "privacy"
+                 ],
+    "icon":  "media/icon.png",
+    "main":  "./dist/extension.js",
+    "engines":  {
+                    "vscode":  "^1.85.0"
+                },
+    "activationEvents":  [
+                             "onCommand:markdownAi.fixGrammar",
+                             "onCommand:markdownAi.formatNotes",
+                             "onLanguage:markdown",
+                             "onLanguage:plaintext"
+                         ],
+    "contributes":  {
+                        "commands":  [
+                                         {
+                                             "command":  "markdownAi.fixGrammar",
+                                             "title":  "Markdown AI: Fix Grammar \u0026 Refine"
+                                         },
+                                         {
+                                             "command":  "markdownAi.formatNotes",
+                                             "title":  "Markdown AI: Convert to Clean Markdown"
+                                         },
+                                         {
+                                             "command":  "markdownAi.showLocalModelStatus",
+                                             "title":  "Markdown AI: Show Local Model Status"
+                                         },
+                                         {
+                                             "command":  "markdownAi.structureMarkdown",
+                                             "title":  "Markdown AI: Structure as Clean Markdown"
+                                         },
+                                         {
+                                             "command":  "markdownAi.makeSkill",
+                                             "title":  "Markdown AI: Make a Skill"
+                                         },
+                                         {
+                                             "command":  "markdownAi.createPrd",
+                                             "title":  "Markdown AI: Create PRD"
+                                         }
+                                     ],
+                        "menus":  {
+                                      "editor/context":  [
+                                                             {
+                                                                 "command":  "markdownAi.fixGrammar",
+                                                                 "when":  "editorHasSelection \u0026\u0026 (resourceLangId == markdown || resourceLangId == plaintext)",
+                                                                 "group":  "1_modification@1"
+                                                             },
+                                                             {
+                                                                 "command":  "markdownAi.formatNotes",
+                                                                 "when":  "editorHasSelection \u0026\u0026 (resourceLangId == markdown || resourceLangId == plaintext)",
+                                                                 "group":  "1_modification@2"
+                                                             },
+                                                             {
+                                                                 "command":  "markdownAi.structureMarkdown",
+                                                                 "when":  "editorHasSelection \u0026\u0026 (resourceLangId == markdown || resourceLangId == plaintext)",
+                                                                 "group":  "1_modification@3"
+                                                             },
+                                                             {
+                                                                 "command":  "markdownAi.makeSkill",
+                                                                 "when":  "editorHasSelection \u0026\u0026 (resourceLangId == markdown || resourceLangId == plaintext)",
+                                                                 "group":  "1_modification@4"
+                                                             },
+                                                             {
+                                                                 "command":  "markdownAi.createPrd",
+                                                                 "when":  "editorHasSelection \u0026\u0026 (resourceLangId == markdown || resourceLangId == plaintext)",
+                                                                 "group":  "1_modification@5"
+                                                             }
+                                                         ]
+                                  },
+                        "keybindings":  [
+                                            {
+                                                "command":  "markdownAi.fixGrammar",
+                                                "key":  "ctrl+m f",
+                                                "mac":  "cmd+m f",
+                                                "when":  "editorTextFocus \u0026\u0026 (resourceLangId == markdown || resourceLangId == plaintext)"
+                                            },
+                                            {
+                                                "command":  "markdownAi.formatNotes",
+                                                "key":  "ctrl+m c",
+                                                "mac":  "cmd+m c",
+                                                "when":  "editorTextFocus \u0026\u0026 (resourceLangId == markdown || resourceLangId == plaintext)"
+                                            },
+                                            {
+                                                "command":  "markdownAi.makeSkill",
+                                                "key":  "ctrl+m s",
+                                                "mac":  "cmd+m s",
+                                                "when":  "editorTextFocus \u0026\u0026 (resourceLangId == markdown || resourceLangId == plaintext)"
+                                            },
+                                            {
+                                                "command":  "markdownAi.createPrd",
+                                                "key":  "ctrl+m p",
+                                                "mac":  "cmd+m p",
+                                                "when":  "editorTextFocus \u0026\u0026 (resourceLangId == markdown || resourceLangId == plaintext)"
+                                            }
+                                        ],
+                        "configuration":  {
+                                              "title":  "Markdown AI Editor",
+                                              "properties":  {
+                                                                 "markdownAi.useManagedEngine":  {
+                                                                                                     "type":  "boolean",
+                                                                                                     "default":  true,
+                                                                                                     "description":  "Download and run a local English writing assistant after you approve its first-use download (about 271 MB). It works offline after setup, preserves Markdown where possible, and may make mistakes."
+                                                                                                 },
+                                                                 "markdownAi.customApiBaseUrl":  {
+                                                                                                     "type":  "string",
+                                                                                                     "default":  "http://127.0.0.1:8080/v1",
+                                                                                                     "description":  "Custom endpoint URL if \u0027useManagedEngine\u0027 is set to false."
+                                                                                                 },
+                                                                 "markdownAi.model":  {
+                                                                                          "type":  "string",
+                                                                                          "default":  "SmolLM2-360M-Instruct-Q4_K_M",
+                                                                                          "description":  "Model name passed in API requests."
+                                                                                      }
+                                                             }
+                                          }
+                    },
+    "scripts":  {
+                    "vscode:prepublish":  "npm run package",
+                    "compile":  "node esbuild.js",
+                    "watch":  "node esbuild.js --watch",
+                    "package":  "node esbuild.js --production",
+                    "typecheck":  "tsc --noEmit",
+                    "test":  "node --test test/*.test.mjs"
+                },
+    "devDependencies":  {
+                            "@types/node":  "^20.0.0",
+                            "@types/vscode":  "^1.85.0",
+                            "esbuild":  "^0.20.0",
+                            "typescript":  "^5.3.0"
+                        }
 }

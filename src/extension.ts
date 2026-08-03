@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { registerManagedEngine, showManagedEngineStatus, startManagedEngine, stopManagedEngine } from './managedEngine';
+import { localModelPageHtml } from './localModelPage';
 
 export const TRANSFORMATION_PROMPTS = {
   fixGrammar: `You are an expert English editor working with Markdown. Correct spelling, grammar, punctuation, and clarity while preserving the author's meaning, source facts, and Markdown structure. Do not invent, remove, or alter factual information. Return only transformed Markdown with no introduction, explanation, or commentary outside the result.`,
@@ -51,12 +52,25 @@ export async function activate(context: vscode.ExtensionContext) {
     );
   });
 
+  const openLocalModelPageDisposable = vscode.commands.registerCommand('markdownAi.openLocalModelPage', async () => {
+    const localApiBaseUrl = await getApiBaseUrl(context);
+    const modelName = vscode.workspace.getConfiguration('markdownAi').get<string>('model', 'SmolLM2-360M-Instruct-Q4_K_M');
+    const panel = vscode.window.createWebviewPanel('markdownAiLocalModel', 'Local Model', vscode.ViewColumn.One, { enableScripts: true });
+    panel.webview.html = localModelPageHtml(localApiBaseUrl, modelName);
+    panel.webview.onDidReceiveMessage((msg) => {
+      if (msg.command === 'open' && typeof msg.url === 'string') {
+        void vscode.env.openExternal(vscode.Uri.parse(msg.url));
+      }
+    });
+  });
+
   context.subscriptions.push(
     fixGrammarDisposable,
     formatNotesDisposable,
     structureMarkdownDisposable,
     makeSkillDisposable,
     createPrdDisposable,
+    openLocalModelPageDisposable,
     statusDisposable
   );
 }
@@ -66,7 +80,7 @@ export async function activate(context: vscode.ExtensionContext) {
  */
 async function getApiBaseUrl(context: vscode.ExtensionContext): Promise<string> {
   const config = vscode.workspace.getConfiguration('markdownAi');
-  const useManaged = config.get<boolean>('useManagedEngine', true); 
+  const useManaged = config.get<boolean>('useManagedEngine', true);
 
   if (useManaged) {
     return await startManagedEngine(context);
@@ -189,7 +203,7 @@ export async function processSelectedText(
           editBuilder.replace(target.range, resultText);
         });
 
-        vscode.window.setStatusBarMessage('✨ Text updated by local AI', 3000);
+        vscode.window.setStatusBarMessage('? Text updated by local AI', 3000);
       } catch (error: unknown) {
         if (error instanceof Error && error.name === 'AbortError') {
           vscode.window.showInformationMessage('Operation canceled.');
@@ -207,3 +221,13 @@ export async function processSelectedText(
 export function deactivate() {
   stopManagedEngine();
 }
+
+
+
+
+
+
+
+
+
+
