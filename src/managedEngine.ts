@@ -5,6 +5,7 @@ import * as os from 'os';
 import * as path from 'path';
 import { promisify } from 'util';
 import * as vscode from 'vscode';
+import * as net from 'net';
 import { defaultModel, selectRuntime, type DownloadAsset, type RuntimeAsset } from './modelCatalog';
 
 type LocalModelState = 'not-installed' | 'downloading' | 'ready' | 'failed' | 'unsupported-platform';
@@ -288,6 +289,17 @@ export function initializeManagedEngine(context: vscode.ExtensionContext): Promi
     return installationPromise;
 }
 
+
+function getFreePort(): Promise<number> {
+  return new Promise((resolve, reject) => {
+    const server = net.createServer();
+    server.listen(0, "127.0.0.1", () => {
+      const port = (server.address() as net.AddressInfo).port;
+      server.close(() => resolve(port));
+    });
+    server.on("error", reject);
+  });
+}
 export async function startManagedEngine(context: vscode.ExtensionContext): Promise<string> {
     const runtime = selectRuntime(process.platform, process.arch);
     if (!runtime) {
@@ -304,7 +316,7 @@ export async function startManagedEngine(context: vscode.ExtensionContext): Prom
             if (!executable) {
                 throw new Error('Local model setup is incomplete. Retry the download.');
             }
-            const port = 8080;
+            const port = await getFreePort();
             const baseUrl = `http://127.0.0.1:${port}/v1`;
             const paths = storagePaths(context);
             server = spawn(executable, ['--model', paths.model, '--host', '127.0.0.1', '--port', String(port), '--ctx-size', '4096'], { windowsHide: true });
@@ -366,3 +378,5 @@ export function stopManagedEngine(): void {
     server = undefined;
     serverPromise = undefined;
 }
+
+
