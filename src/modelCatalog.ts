@@ -11,39 +11,39 @@ export interface RuntimeAsset extends DownloadAsset {
 }
 
 export const defaultModel: DownloadAsset & { displayName: string; version: string } = {
-    displayName: 'SmolLM2-360M-Instruct-Q4_K_M',
-    version: '2024-11-18',
-    url: 'https://huggingface.co/mradermacher/SmolLM2-360M-Instruct-GGUF/resolve/main/SmolLM2-360M-Instruct.Q4_K_M.gguf',
-    sha256: 'ade7aee1e5bd7c3b8f1fedafc61a1a0be31e8afa64e006607cd202323e2ccce0',
-    bytes: 270_590_976,
+    displayName: 'Qwen3-0.6B-Q8_0',
+    version: '2025-05-08',
+    url: 'https://huggingface.co/Qwen/Qwen3-0.6B-GGUF/resolve/main/Qwen3-0.6B-Q8_0.gguf',
+    sha256: '9465e63a22add5354d9bb4b99e90117043c7124007664907259bd16d043bb031',
+    bytes: 639_446_688,
 };
 
 const runtimes: Record<string, RuntimeAsset> = {
     'win32-x64': {
-        version: 'b9637',
-        url: 'https://github.com/ggml-org/llama.cpp/releases/download/b9637/llama-b9637-bin-win-cpu-x64.zip',
-        sha256: 'f7783c2b8c007f95e710ac40f26a24861a80b603b0b739fc54d7c926a4716c1e',
+        version: 'b10549',
+        url: 'https://github.com/ggml-org/llama.cpp/releases/download/b10549/llama-b10549-bin-win-cpu-x64.zip',
+        sha256: '11d38f2ed878489b2c3d02b3d1a67683c02fbfb3d265876b9ede749a8dff5f1c',
         archive: 'zip',
         executableName: 'llama-server.exe',
     },
     'darwin-x64': {
-        version: 'b9637',
-        url: 'https://github.com/ggml-org/llama.cpp/releases/download/b9637/llama-b9637-bin-macos-x64.tar.gz',
-        sha256: '71743f8db0958e7c266cceb7add7b16aa418a964667e471094aa6ae65b9c8298',
+        version: 'b10549',
+        url: 'https://github.com/ggml-org/llama.cpp/releases/download/b10549/llama-b10549-bin-macos-x64.tar.gz',
+        sha256: '94177680843a187881ae54021bbad8211c40797cab0df923ef17ee735e3ade09',
         archive: 'tar.gz',
         executableName: 'llama-server',
     },
     'darwin-arm64': {
-        version: 'b9637',
-        url: 'https://github.com/ggml-org/llama.cpp/releases/download/b9637/llama-b9637-bin-macos-arm64.tar.gz',
-        sha256: '72a93f3e68c31de3e438d462669aad1fcdb423b995e9c41033cc7d27a9a3ac69',
+        version: 'b10549',
+        url: 'https://github.com/ggml-org/llama.cpp/releases/download/b10549/llama-b10549-bin-macos-arm64.tar.gz',
+        sha256: '71e4b31afb020d6b71894eb8d1f2c0693038aec3f41f672f9fafb5055c8f2226',
         archive: 'tar.gz',
         executableName: 'llama-server',
     },
     'linux-x64': {
-        version: 'b9637',
-        url: 'https://github.com/ggml-org/llama.cpp/releases/download/b9637/llama-b9637-bin-ubuntu-x64.tar.gz',
-        sha256: 'a50ee14f021a9d8e92e30f622f7e3be1318ee1125bb9a9ba8d2025388df48743',
+        version: 'b10549',
+        url: 'https://github.com/ggml-org/llama.cpp/releases/download/b10549/llama-b10549-bin-ubuntu-x64.tar.gz',
+        sha256: '66b26d8cb3ab8edaf5a12bfe642b8f00844925f614f196a96a222b7ed1582c1d',
         archive: 'tar.gz',
         executableName: 'llama-server',
     },

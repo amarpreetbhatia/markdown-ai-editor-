@@ -63,7 +63,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   const openLocalModelPageDisposable = vscode.commands.registerCommand('markdownAi.openLocalModelPage', async () => {
     const localApiBaseUrl = await getApiBaseUrl(context);
-    const modelName = vscode.workspace.getConfiguration('markdownAi').get<string>('model', 'SmolLM2-360M-Instruct-Q4_K_M');
+    const modelName = vscode.workspace.getConfiguration('markdownAi').get<string>('model', 'Qwen3-0.6B-Q8_0');
     const panel = vscode.window.createWebviewPanel('markdownAiLocalModel', 'Local Model', vscode.ViewColumn.One, { enableScripts: true });
     panel.webview.html = localModelPageHtml(localApiBaseUrl, modelName);
     panel.webview.onDidReceiveMessage((msg) => {

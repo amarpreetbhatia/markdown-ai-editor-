@@ -69,7 +69,8 @@ test('managed model setup is enabled with clear first-run guidance', () => {
     assert.equal(settings['markdownAi.useManagedEngine'].default, true);
     assert.equal(settings['markdownAi.managedModelUrl'], undefined);
     assert.equal(settings['markdownAi.managedModelSha256'], undefined);
-    assert.match(settings['markdownAi.useManagedEngine'].description, /271 MB/);
+    assert.match(settings['markdownAi.useManagedEngine'].description, /640 MB/);
+    assert.equal(settings['markdownAi.model'].default, 'Qwen3-0.6B-Q8_0');
 });
 
 test('manifest identifies the Marketplace release and its public resources', () => {
