@@ -57,39 +57,61 @@
                                          },
                                          {
                                              "command":  "markdownAi.makeSkill",
-                                             "title":  "Markdown AI: Make a Skill"
+                                             "title":  "Markdown AI: Convert to AI Skill Format"
+                                         },
+                                         {
+                                             "command":  "markdownAi.makePrompt",
+                                             "title":  "Markdown AI: Convert to AI Prompt Format"
                                          },
                                          {
                                              "command":  "markdownAi.createPrd",
-                                             "title":  "Markdown AI: Create PRD"
+                                             "title":  "Markdown AI: Convert to PRD (Product Requirements Document) Format"
+                                         }
+                                     ],
+                        "submenus":  [
+                                         {
+                                             "id":  "markdownAiEditor",
+                                             "label":  "Markdown AI Editor"
                                          }
                                      ],
                         "menus":  {
                                       "editor/context":  [
                                                              {
+                                                                 "submenu":  "markdownAiEditor",
+                                                                 "when":  "editorHasSelection \u0026\u0026 (resourceLangId == markdown || resourceLangId == plaintext)",
+                                                                 "group":  "1_modification"
+                                                             }
+                                                         ],
+                                      "markdownAiEditor":  [
+                                                             {
                                                                  "command":  "markdownAi.fixGrammar",
                                                                  "when":  "editorHasSelection \u0026\u0026 (resourceLangId == markdown || resourceLangId == plaintext)",
-                                                                 "group":  "1_modification@1"
+                                                                 "group":  "1_transformation@1"
                                                              },
                                                              {
                                                                  "command":  "markdownAi.formatNotes",
                                                                  "when":  "editorHasSelection \u0026\u0026 (resourceLangId == markdown || resourceLangId == plaintext)",
-                                                                 "group":  "1_modification@2"
+                                                                 "group":  "1_transformation@2"
                                                              },
                                                              {
                                                                  "command":  "markdownAi.structureMarkdown",
                                                                  "when":  "editorHasSelection \u0026\u0026 (resourceLangId == markdown || resourceLangId == plaintext)",
-                                                                 "group":  "1_modification@3"
+                                                                 "group":  "1_transformation@3"
                                                              },
                                                              {
                                                                  "command":  "markdownAi.makeSkill",
                                                                  "when":  "editorHasSelection \u0026\u0026 (resourceLangId == markdown || resourceLangId == plaintext)",
-                                                                 "group":  "1_modification@4"
+                                                                 "group":  "1_transformation@4"
+                                                             },
+                                                             {
+                                                                 "command":  "markdownAi.makePrompt",
+                                                                 "when":  "editorHasSelection \u0026\u0026 (resourceLangId == markdown || resourceLangId == plaintext)",
+                                                                 "group":  "1_transformation@5"
                                                              },
                                                              {
                                                                  "command":  "markdownAi.createPrd",
                                                                  "when":  "editorHasSelection \u0026\u0026 (resourceLangId == markdown || resourceLangId == plaintext)",
-                                                                 "group":  "1_modification@5"
+                                                                 "group":  "1_transformation@6"
                                                              }
                                                          ]
                                   },
@@ -107,9 +129,21 @@
                                                 "when":  "editorTextFocus \u0026\u0026 (resourceLangId == markdown || resourceLangId == plaintext)"
                                             },
                                             {
+                                                "command":  "markdownAi.structureMarkdown",
+                                                "key":  "ctrl+m m",
+                                                "mac":  "cmd+m m",
+                                                "when":  "editorTextFocus \u0026\u0026 (resourceLangId == markdown || resourceLangId == plaintext)"
+                                            },
+                                            {
                                                 "command":  "markdownAi.makeSkill",
                                                 "key":  "ctrl+m s",
                                                 "mac":  "cmd+m s",
+                                                "when":  "editorTextFocus \u0026\u0026 (resourceLangId == markdown || resourceLangId == plaintext)"
+                                            },
+                                            {
+                                                "command":  "markdownAi.makePrompt",
+                                                "key":  "ctrl+m a",
+                                                "mac":  "cmd+m a",
                                                 "when":  "editorTextFocus \u0026\u0026 (resourceLangId == markdown || resourceLangId == plaintext)"
                                             },
                                             {

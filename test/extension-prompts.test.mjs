@@ -29,9 +29,11 @@ test('workflow commands use strict Markdown-only prompts through the shared flow
     assert.match(source, /fixGrammar:[\s\S]*?Return only transformed Markdown/);
     assert.match(source, /cleanMarkdown:[\s\S]*?sensible headings, lists, emphasis, spacing, and hierarchy[\s\S]*?preserv/);
     assert.match(source, /skill:[\s\S]*?standalone SKILL\.md[\s\S]*?YAML frontmatter[\s\S]*?name[\s\S]*?description[\s\S]*?workflow[\s\S]*?quality checks/);
+    assert.match(source, /prompt:[\s\S]*?standalone reusable AI prompt[\s\S]*?Goal[\s\S]*?Context[\s\S]*?Instructions[\s\S]*?Constraints[\s\S]*?Output Format/);
     assert.match(source, /prd:[\s\S]*?problem statement[\s\S]*?goals[\s\S]*?non-goals[\s\S]*?user stories[\s\S]*?acceptance criteria[\s\S]*?open questions/);
     assert.match(source, /registerCommand\('markdownAi\.structureMarkdown',[\s\S]*?processSelectedText\([\s\S]*?TRANSFORMATION_PROMPTS\.cleanMarkdown/);
     assert.match(source, /registerCommand\('markdownAi\.makeSkill',[\s\S]*?processSelectedText\([\s\S]*?TRANSFORMATION_PROMPTS\.skill/);
+    assert.match(source, /registerCommand\('markdownAi\.makePrompt',[\s\S]*?processSelectedText\([\s\S]*?TRANSFORMATION_PROMPTS\.prompt/);
     assert.match(source, /registerCommand\('markdownAi\.createPrd',[\s\S]*?processSelectedText\([\s\S]*?TRANSFORMATION_PROMPTS\.prd/);
 });
 

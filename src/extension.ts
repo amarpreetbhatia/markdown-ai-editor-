@@ -6,6 +6,7 @@ export const TRANSFORMATION_PROMPTS = {
   fixGrammar: `You are an expert English editor working with Markdown. Correct spelling, grammar, punctuation, and clarity while preserving the author's meaning, source facts, and Markdown structure. Do not invent, remove, or alter factual information. Return only transformed Markdown with no introduction, explanation, or commentary outside the result.`,
   cleanMarkdown: `You are a Markdown formatting assistant. Transform the supplied content into clean, readable Markdown with sensible headings, lists, emphasis, spacing, and hierarchy while preserving its meaning, source facts, and existing Markdown structure where appropriate. Do not invent missing information or add commentary. Return only transformed Markdown with no introduction, explanation, or commentary outside the result.`,
   skill: `Create a standalone SKILL.md from the supplied content, following the VS Code skill format. Start with YAML frontmatter containing a concise name and description, then provide a reusable workflow with clear steps, decisions, and quality checks. Preserve source facts and do not invent missing details; express missing details as questions or assumptions when they are necessary. Return only transformed Markdown with no introduction, explanation, or commentary outside the result.`,
+  prompt: `Create a standalone reusable AI prompt in Markdown from the supplied content. Use clearly labeled sections for Goal, Context, Inputs, Instructions, Constraints, and Output Format. Include examples only when they are supported by the source content. Preserve source facts, do not invent missing details, and express absent information as assumptions or open questions where needed. Return only transformed Markdown with no introduction, explanation, or commentary outside the result.`,
   prd: `Create a practical Markdown product requirements document from the supplied content. Include clearly labeled sections for problem statement, goals, non-goals, users, requirements, user stories, acceptance criteria, risks, and open questions. Preserve source facts, do not invent missing information, and use explicit assumptions or open questions where details are absent. Return only transformed Markdown with no introduction, explanation, or commentary outside the result.`,
 } as const;
 
@@ -39,15 +40,23 @@ export async function activate(context: vscode.ExtensionContext) {
   const makeSkillDisposable = vscode.commands.registerCommand('markdownAi.makeSkill', async () => {
     await processSelectedText(
       context,
-      'Make a Skill',
+      'Convert to AI Skill Format',
       TRANSFORMATION_PROMPTS.skill
+    );
+  });
+
+  const makePromptDisposable = vscode.commands.registerCommand('markdownAi.makePrompt', async () => {
+    await processSelectedText(
+      context,
+      'Convert to AI Prompt Format',
+      TRANSFORMATION_PROMPTS.prompt
     );
   });
 
   const createPrdDisposable = vscode.commands.registerCommand('markdownAi.createPrd', async () => {
     await processSelectedText(
       context,
-      'Create PRD',
+      'Convert to PRD (Product Requirements Document) Format',
       TRANSFORMATION_PROMPTS.prd
     );
   });
@@ -69,6 +78,7 @@ export async function activate(context: vscode.ExtensionContext) {
     formatNotesDisposable,
     structureMarkdownDisposable,
     makeSkillDisposable,
+    makePromptDisposable,
     createPrdDisposable,
     openLocalModelPageDisposable,
     statusDisposable

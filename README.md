@@ -18,30 +18,20 @@ Follow the complete guide at [amarpreetbhatia.github.io/markdown-ai-editor-](htt
 
 It also explains the [managed local model](docs/local-model.md) and includes a [local Ollama setup example](docs/ollama.md).
 
-## Development
+## Local Testing & Development
 
-- `npm.cmd run compile` bundles the extension for development.
-- `npm.cmd test` runs manifest and documentation checks.
-- `npm.cmd run typecheck` checks TypeScript without writing output.
+Install dependencies, run the checks, create a production bundle, package a VSIX, and install it into your local VS Code instance:
 
+```bash
+npm install
+npm test
+npm run typecheck
+npm run package
+npm exec --yes --package @vscode/vsce -- vsce package --no-dependencies
+code --install-extension markdown-ai-editor-*.vsix
+```
 
- ## Generate Manual
-  `npm install`
-   `npm test`
-  `npm run typecheck`
-  `npm run package`
-  `npm.cmd exec --yes --package @vscode/vsce -- vsce package --no-dependencies`
-
-  This creates:
-
-  markdown-ai-editor-0.0.2.vsix
-
-  Install it locally:
-
-  code.cmd --install-extension .\markdown-ai-editor-0.0.2.vsix
-
-  Or in VS Code: Extensions → ... → Install from VSIX...
-
+The VSIX filename includes the extension version, for example `markdown-ai-editor-0.0.2.vsix`. You can also use VS Code's **Extensions: Install from VSIX...** command. For iterative development, run `npm run compile` and launch the **Run Extension** configuration (`F5`).
 
 See [Repository Guidelines](AGENTS.md) for contributor conventions.
 

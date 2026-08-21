@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const packageJson = JSON.parse(await readFile(path.join(root, 'package.json'), 'utf8'));
 
-test('manifest exposes the Markdown AI workflow commands in the editor context menu', () => {
+test('manifest exposes every transformation under the Markdown AI Editor context submenu', () => {
     const commands = packageJson.contributes.commands;
     assert.deepEqual(commands.map((command) => command.command), [
         'markdownAi.fixGrammar',
@@ -15,33 +15,51 @@ test('manifest exposes the Markdown AI workflow commands in the editor context m
         'markdownAi.showLocalModelStatus',
         'markdownAi.structureMarkdown',
         'markdownAi.makeSkill',
+        'markdownAi.makePrompt',
         'markdownAi.createPrd',
     ]);
-    assert.deepEqual(commands.slice(-3).map(({ command, title }) => ({ command, title })), [
+    assert.deepEqual(commands.slice(-4).map(({ command, title }) => ({ command, title })), [
         { command: 'markdownAi.structureMarkdown', title: 'Markdown AI: Structure as Clean Markdown' },
-        { command: 'markdownAi.makeSkill', title: 'Markdown AI: Make a Skill' },
-        { command: 'markdownAi.createPrd', title: 'Markdown AI: Create PRD' },
+        { command: 'markdownAi.makeSkill', title: 'Markdown AI: Convert to AI Skill Format' },
+        { command: 'markdownAi.makePrompt', title: 'Markdown AI: Convert to AI Prompt Format' },
+        { command: 'markdownAi.createPrd', title: 'Markdown AI: Convert to PRD (Product Requirements Document) Format' },
     ]);
     assert.ok(packageJson.activationEvents.includes('onLanguage:markdown'));
     assert.ok(packageJson.activationEvents.includes('onLanguage:plaintext'));
+    assert.deepEqual(packageJson.contributes.submenus, [
+        { id: 'markdownAiEditor', label: 'Markdown AI Editor' },
+    ]);
+    assert.deepEqual(packageJson.contributes.menus['editor/context'], [{
+        submenu: 'markdownAiEditor',
+        when: 'editorHasSelection && (resourceLangId == markdown || resourceLangId == plaintext)',
+        group: '1_modification',
+    }]);
     const workflowCommands = new Set([
+        'markdownAi.fixGrammar',
+        'markdownAi.formatNotes',
         'markdownAi.structureMarkdown',
         'markdownAi.makeSkill',
+        'markdownAi.makePrompt',
         'markdownAi.createPrd',
     ]);
-    for (const item of packageJson.contributes.menus['editor/context'].filter((item) => workflowCommands.has(item.command))) {
+    const submenuItems = packageJson.contributes.menus.markdownAiEditor;
+    assert.equal(submenuItems.length, workflowCommands.size);
+    for (const item of submenuItems) {
+        assert.ok(workflowCommands.has(item.command));
         assert.match(item.when, /editorHasSelection/);
         assert.match(item.when, /resourceLangId == markdown/);
         assert.match(item.when, /resourceLangId == plaintext/);
-        assert.match(item.group, /^1_modification@/);
+        assert.match(item.group, /^1_transformation@/);
     }
 });
 
-test('manifest binds Markdown AI workflow chords for Windows, Linux, and macOS', () => {
+test('manifest binds every core transformation chord for Windows, Linux, and macOS', () => {
     assert.deepEqual(packageJson.contributes.keybindings, [
         { command: 'markdownAi.fixGrammar', key: 'ctrl+m f', mac: 'cmd+m f', when: 'editorTextFocus && (resourceLangId == markdown || resourceLangId == plaintext)' },
         { command: 'markdownAi.formatNotes', key: 'ctrl+m c', mac: 'cmd+m c', when: 'editorTextFocus && (resourceLangId == markdown || resourceLangId == plaintext)' },
+        { command: 'markdownAi.structureMarkdown', key: 'ctrl+m m', mac: 'cmd+m m', when: 'editorTextFocus && (resourceLangId == markdown || resourceLangId == plaintext)' },
         { command: 'markdownAi.makeSkill', key: 'ctrl+m s', mac: 'cmd+m s', when: 'editorTextFocus && (resourceLangId == markdown || resourceLangId == plaintext)' },
+        { command: 'markdownAi.makePrompt', key: 'ctrl+m a', mac: 'cmd+m a', when: 'editorTextFocus && (resourceLangId == markdown || resourceLangId == plaintext)' },
         { command: 'markdownAi.createPrd', key: 'ctrl+m p', mac: 'cmd+m p', when: 'editorTextFocus && (resourceLangId == markdown || resourceLangId == plaintext)' },
     ]);
 });
@@ -75,6 +93,18 @@ test('release documentation links to the hosted user guide', async () => {
 
     assert.match(readme, /https:\/\/amarpreetbhatia\.github\.io\/markdown-ai-editor-\//);
     assert.match(mkdocsConfig, /theme:\s*\n\s*name: material/);
+});
+
+test('README documents local VSIX packaging and installation', async () => {
+    const readme = await readFile(path.join(root, 'README.md'), 'utf8');
+
+    assert.match(readme, /## Local Testing & Development/);
+    assert.match(readme, /npm install/);
+    assert.match(readme, /npm test/);
+    assert.match(readme, /npm run typecheck/);
+    assert.match(readme, /npm run package/);
+    assert.match(readme, /vsce package/);
+    assert.match(readme, /code --install-extension markdown-ai-editor-\*\.vsix/);
 });
 
 test('documentation deployment follows the repository default branch', async () => {
