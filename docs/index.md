@@ -6,6 +6,10 @@ Markdown AI Editor improves selected Markdown and plain text directly in Visual 
 - **Convert to Clean Markdown** turns rough notes into a structured Markdown draft.
 - **Convert to AI Skill Format**, **Convert to AI Prompt Format**, and **Convert to PRD** turn rough ideas into reusable agent-ready documents.
 
+## Demo
+
+[Watch the VS Code extension demo](https://github.com/amarpreetbhatia/markdown-ai-editor-/blob/main/vs-code-ext-demo.mp4)
+
 ## Prerequisites
 
 You need VS Code 1.85 or later, this extension, and a Markdown (`.md`) or plain-text document. Managed mode is enabled by default. After you approve it, it downloads the `Qwen3-0.6B-Q8_0` writing model (about 640 MB) and a native local runtime. Allow roughly 1 GB of disk space and 2 GB of available RAM. Managed mode supports Windows x64, macOS Intel, macOS Apple Silicon, and Linux x64. It runs only on your computer and works offline after setup.

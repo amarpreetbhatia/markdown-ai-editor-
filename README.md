@@ -6,6 +6,10 @@ Refine Markdown and plain text in VS Code with a local AI model. In managed mode
 
 This release adds a focused **Markdown AI Editor** context submenu, keyboard shortcuts for every transformation, AI Skill, AI Prompt, and PRD formats, plus a status-bar port indicator while the local model is running. Managed mode now uses the pinned `Qwen3-0.6B-Q8_0` model: a modern instruction-following model that keeps the managed download near 640 MB while improving structured Markdown generation.
 
+## Demo
+
+[Watch the VS Code extension demo](vs-code-ext-demo.mp4)
+
 ## Prerequisites
 
 - VS Code 1.85 or later.
