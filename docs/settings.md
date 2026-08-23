@@ -9,7 +9,7 @@ Managed mode is the default. After you approve first-time setup, it downloads pi
 | Setting | Default | When to change it |
 | --- | --- | --- |
 | `markdownAi.useManagedEngine` | `true` | Disable only when using your own API endpoint. |
-| `markdownAi.model` | `SmolLM2-360M-Instruct-Q4_K_M` | Match the model identifier accepted by a custom endpoint. |
+| `markdownAi.model` | `Qwen3-0.6B-Q8_0` | Match the model identifier accepted by a custom endpoint. |
 
 ## Use a custom endpoint
 

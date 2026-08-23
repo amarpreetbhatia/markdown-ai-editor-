@@ -1,26 +1,88 @@
 import * as vscode from 'vscode';
 import { registerManagedEngine, showManagedEngineStatus, startManagedEngine, stopManagedEngine } from './managedEngine';
+import { localModelPageHtml } from './localModelPage';
+
+export const TRANSFORMATION_PROMPTS = {
+  fixGrammar: `You are an expert English editor working with Markdown. Correct spelling, grammar, punctuation, and clarity while preserving the author's meaning, source facts, and Markdown structure. Do not invent, remove, or alter factual information. Return only transformed Markdown with no introduction, explanation, or commentary outside the result.`,
+  cleanMarkdown: `You are a Markdown formatting assistant. Transform the supplied content into clean, readable Markdown with sensible headings, lists, emphasis, spacing, and hierarchy while preserving its meaning, source facts, and existing Markdown structure where appropriate. Do not invent missing information or add commentary. Return only transformed Markdown with no introduction, explanation, or commentary outside the result.`,
+  skill: `Create a standalone SKILL.md from the supplied content, following the VS Code skill format. Start with YAML frontmatter containing a concise name and description, then provide a reusable workflow with clear steps, decisions, and quality checks. Preserve source facts and do not invent missing details; express missing details as questions or assumptions when they are necessary. Return only transformed Markdown with no introduction, explanation, or commentary outside the result.`,
+  prompt: `Create a standalone reusable AI prompt in Markdown from the supplied content. Use clearly labeled sections for Goal, Context, Inputs, Instructions, Constraints, and Output Format. Include examples only when they are supported by the source content. Preserve source facts, do not invent missing details, and express absent information as assumptions or open questions where needed. Return only transformed Markdown with no introduction, explanation, or commentary outside the result.`,
+  prd: `Create a practical Markdown product requirements document from the supplied content. Include clearly labeled sections for problem statement, goals, non-goals, users, requirements, user stories, acceptance criteria, risks, and open questions. Preserve source facts, do not invent missing information, and use explicit assumptions or open questions where details are absent. Return only transformed Markdown with no introduction, explanation, or commentary outside the result.`,
+} as const;
 
 export async function activate(context: vscode.ExtensionContext) {
   registerManagedEngine(context);
   const statusDisposable = vscode.commands.registerCommand('markdownAi.showLocalModelStatus', () => showManagedEngineStatus(context));
-  // Register Command: Fix Grammar
   const fixGrammarDisposable = vscode.commands.registerCommand('markdownAi.fixGrammar', async () => {
     await processSelectedText(
       context,
-      'You are an expert editor. Fix all spelling, grammar, and typos in the text. Improve clarity while preserving the original meaning and markdown formatting. Return ONLY the revised text with no intro, outro, or conversational remarks.'
+      'Fix Grammar & Refine',
+      TRANSFORMATION_PROMPTS.fixGrammar
     );
   });
 
-  // Register Command: Format Notes
   const formatNotesDisposable = vscode.commands.registerCommand('markdownAi.formatNotes', async () => {
     await processSelectedText(
       context,
-      'You are a Markdown formatting assistant. Structure the raw notes using bullet points, bolding key concepts, and clear headers where appropriate. Return ONLY the formatted Markdown text with no explanations.'
+      'Convert to Clean Markdown',
+      TRANSFORMATION_PROMPTS.cleanMarkdown
     );
   });
 
-  context.subscriptions.push(fixGrammarDisposable, formatNotesDisposable, statusDisposable);
+  const structureMarkdownDisposable = vscode.commands.registerCommand('markdownAi.structureMarkdown', async () => {
+    await processSelectedText(
+      context,
+      'Structure as Clean Markdown',
+      TRANSFORMATION_PROMPTS.cleanMarkdown
+    );
+  });
+
+  const makeSkillDisposable = vscode.commands.registerCommand('markdownAi.makeSkill', async () => {
+    await processSelectedText(
+      context,
+      'Convert to AI Skill Format',
+      TRANSFORMATION_PROMPTS.skill
+    );
+  });
+
+  const makePromptDisposable = vscode.commands.registerCommand('markdownAi.makePrompt', async () => {
+    await processSelectedText(
+      context,
+      'Convert to AI Prompt Format',
+      TRANSFORMATION_PROMPTS.prompt
+    );
+  });
+
+  const createPrdDisposable = vscode.commands.registerCommand('markdownAi.createPrd', async () => {
+    await processSelectedText(
+      context,
+      'Convert to PRD (Product Requirements Document) Format',
+      TRANSFORMATION_PROMPTS.prd
+    );
+  });
+
+  const openLocalModelPageDisposable = vscode.commands.registerCommand('markdownAi.openLocalModelPage', async () => {
+    const localApiBaseUrl = await getApiBaseUrl(context);
+    const modelName = vscode.workspace.getConfiguration('markdownAi').get<string>('model', 'Qwen3-0.6B-Q8_0');
+    const panel = vscode.window.createWebviewPanel('markdownAiLocalModel', 'Local Model', vscode.ViewColumn.One, { enableScripts: true });
+    panel.webview.html = localModelPageHtml(localApiBaseUrl, modelName);
+    panel.webview.onDidReceiveMessage((msg) => {
+      if (msg.command === 'open' && typeof msg.url === 'string') {
+        void vscode.env.openExternal(vscode.Uri.parse(msg.url));
+      }
+    });
+  });
+
+  context.subscriptions.push(
+    fixGrammarDisposable,
+    formatNotesDisposable,
+    structureMarkdownDisposable,
+    makeSkillDisposable,
+    makePromptDisposable,
+    createPrdDisposable,
+    openLocalModelPageDisposable,
+    statusDisposable
+  );
 }
 
 /**
@@ -28,7 +90,7 @@ export async function activate(context: vscode.ExtensionContext) {
  */
 async function getApiBaseUrl(context: vscode.ExtensionContext): Promise<string> {
   const config = vscode.workspace.getConfiguration('markdownAi');
-  const useManaged = config.get<boolean>('useManagedEngine', true); 
+  const useManaged = config.get<boolean>('useManagedEngine', true);
 
   if (useManaged) {
     return await startManagedEngine(context);
@@ -37,20 +99,66 @@ async function getApiBaseUrl(context: vscode.ExtensionContext): Promise<string> 
   }
 }
 
+function throwIfCanceled(token: vscode.CancellationToken, controller: AbortController): void {
+  if (!token.isCancellationRequested) {
+    return;
+  }
+
+  controller.abort();
+  const error = new Error('Operation canceled.');
+  error.name = 'AbortError';
+  throw error;
+}
+
 /**
- * Executes AI API request on selected text and applies edits.
+ * Resolves the selected text, or confirms replacing the entire document.
  */
-async function processSelectedText(context: vscode.ExtensionContext, systemPrompt: string) {
+export async function getTargetText(editor: vscode.TextEditor): Promise<{ text: string; range: vscode.Range } | undefined> {
+  const selection = editor.selection;
+  if (!selection.isEmpty) {
+    return { text: editor.document.getText(selection), range: selection };
+  }
+
+  const choice = await vscode.window.showWarningMessage(
+    'No text is selected. Do you want to transform the entire document?',
+    'Transform entire document',
+    'Cancel'
+  );
+
+  if (choice !== 'Transform entire document') {
+    return undefined;
+  }
+
+  const text = editor.document.getText();
+  return {
+    text,
+    range: new vscode.Range(
+      editor.document.positionAt(0),
+      editor.document.positionAt(text.length)
+    ),
+  };
+}
+
+/**
+ * Executes an AI API request for selected text and applies one replacement edit.
+ */
+export async function processSelectedText(
+  context: vscode.ExtensionContext,
+  title: string,
+  systemPrompt: string
+): Promise<void> {
   const editor = vscode.window.activeTextEditor;
   if (!editor) {
     vscode.window.showWarningMessage('No active text editor found.');
     return;
   }
 
-  const selection = editor.selection;
-  const targetText = editor.document.getText(selection.isEmpty ? undefined : selection);
+  const target = await getTargetText(editor);
+  if (!target) {
+    return;
+  }
 
-  if (!targetText || targetText.trim().length === 0) {
+  if (!target.text || target.text.trim().length === 0) {
     vscode.window.showInformationMessage('Please select text to process.');
     return;
   }
@@ -61,15 +169,17 @@ async function processSelectedText(context: vscode.ExtensionContext, systemPromp
   await vscode.window.withProgress(
     {
       location: vscode.ProgressLocation.Notification,
-      title: 'Markdown AI: Processing text...',
+      title: `Markdown AI: ${title}`,
       cancellable: true,
     },
     async (progress, token) => {
+      const controller = new AbortController();
+      const cancellationDisposable = token.onCancellationRequested(() => controller.abort());
+
       try {
         const apiBaseUrl = await getApiBaseUrl(context);
+        throwIfCanceled(token, controller);
         console.log(`Using API Base URL: ${apiBaseUrl}`);
-        const controller = new AbortController();
-        token.onCancellationRequested(() => controller.abort());
 
         const response = await fetch(`${apiBaseUrl.replace(/\/$/, '')}/chat/completions`, {
           method: 'POST',
@@ -79,7 +189,7 @@ async function processSelectedText(context: vscode.ExtensionContext, systemPromp
             model: model,
             messages: [
               { role: 'system', content: systemPrompt },
-              { role: 'user', content: targetText },
+              { role: 'user', content: target.text },
             ],
             temperature: 0.1,
           }),
@@ -98,18 +208,12 @@ async function processSelectedText(context: vscode.ExtensionContext, systemPromp
           throw new Error('Received empty response from local model.');
         }
 
-        const targetRange = selection.isEmpty
-          ? new vscode.Range(
-              editor.document.positionAt(0),
-              editor.document.positionAt(editor.document.getText().length)
-            )
-          : selection;
-
+        throwIfCanceled(token, controller);
         await editor.edit((editBuilder) => {
-          editBuilder.replace(targetRange, resultText);
+          editBuilder.replace(target.range, resultText);
         });
 
-        vscode.window.setStatusBarMessage('✨ Text updated by local AI', 3000);
+        vscode.window.setStatusBarMessage('? Text updated by local AI', 3000);
       } catch (error: unknown) {
         if (error instanceof Error && error.name === 'AbortError') {
           vscode.window.showInformationMessage('Operation canceled.');
@@ -117,6 +221,8 @@ async function processSelectedText(context: vscode.ExtensionContext, systemPromp
           const msg = error instanceof Error ? error.message : String(error);
           vscode.window.showErrorMessage(`Markdown AI Error: ${msg}`);
         }
+      } finally {
+        cancellationDisposable.dispose();
       }
     }
   );
@@ -125,3 +231,13 @@ async function processSelectedText(context: vscode.ExtensionContext, systemPromp
 export function deactivate() {
   stopManagedEngine();
 }
+
+
+
+
+
+
+
+
+
+

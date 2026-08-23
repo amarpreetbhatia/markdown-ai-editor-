@@ -1,6 +1,6 @@
 # First run
 
-After you approve setup, Markdown AI downloads a local SmolLM2 English writing assistant and its runtime (about 271 MB for the model). Once installed, editing works offline.
+After you approve setup, Markdown AI downloads a local Qwen3 English writing assistant and its runtime (about 640 MB for the model). Once installed, editing works offline.
 
 For a detailed explanation of what is downloaded, how it stays local, and what happens when an editing command runs, read [Managed local model](local-model.md).
 
@@ -16,7 +16,7 @@ After activation, VS Code offers a one-click consent dialog. You can continue ed
 
 1. A progress notification displays percentage, speed, and estimated time while setup downloads.
 2. The extension checks the downloaded file before installing it.
-3. The model starts on a private `127.0.0.1` address. Startup can take up to 90 seconds.
+3. The model starts on a private `127.0.0.1` address when you run a transformation. The status bar shows its dynamic port while it is running. Startup can take up to 90 seconds.
 4. Your command waits for setup, then updates the selected text. The assistant preserves Markdown where possible but may make mistakes.
 
 !!! warning "Keep VS Code open"

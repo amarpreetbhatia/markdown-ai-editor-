@@ -5,6 +5,7 @@ import * as os from 'os';
 import * as path from 'path';
 import { promisify } from 'util';
 import * as vscode from 'vscode';
+import * as net from 'net';
 import { defaultModel, selectRuntime, type DownloadAsset, type RuntimeAsset } from './modelCatalog';
 
 type LocalModelState = 'not-installed' | 'downloading' | 'ready' | 'failed' | 'unsupported-platform';
@@ -22,6 +23,7 @@ let detail = 'Local model setup has not started.';
 let installationPromise: Promise<void> | undefined;
 let serverPromise: Promise<string> | undefined;
 let server: ChildProcess | undefined;
+let activePort: number | undefined;
 let statusBar: vscode.StatusBarItem | undefined;
 let downloadController: AbortController | undefined;
 
@@ -30,7 +32,7 @@ async function requestSetupApproval(context: vscode.ExtensionContext): Promise<b
         return true;
     }
     const choice = await vscode.window.showInformationMessage(
-        `Markdown AI can download a ${defaultModel.displayName} writing model (about 271 MB) and its local runtime. The first setup needs internet; editing works offline after that.`,
+        `Markdown AI can download a ${defaultModel.displayName} writing model (about 640 MB) and its local runtime. The first setup needs internet; editing works offline after that.`,
         'Set up local model',
         'Use custom endpoint',
         'Not now',
@@ -49,7 +51,7 @@ function storagePaths(context: vscode.ExtensionContext): { root: string; model: 
     const root = path.join(context.globalStorageUri.fsPath, 'local-model');
     return {
         root,
-        model: path.join(root, 'SmolLM2-360M-Instruct-Q4_K_M.gguf'),
+        model: path.join(root, 'Qwen3-0.6B-Q8_0.gguf'),
         runtime: path.join(root, 'runtime'),
         marker: path.join(root, 'installation.json'),
     };
@@ -68,7 +70,10 @@ function updateStatus(nextState: LocalModelState, nextDetail: string): void {
         failed: '$(error)',
         'unsupported-platform': '$(warning)',
     };
-    statusBar.text = `${icon[state]} Markdown AI: ${state === 'ready' ? 'Local model ready' : nextDetail}`;
+    const statusText = state === 'ready'
+        ? activePort === undefined ? 'Local model installed' : `Local model ready (port ${activePort})`
+        : nextDetail;
+    statusBar.text = `${icon[state]} Markdown AI: ${statusText}`;
     statusBar.tooltip = `Markdown AI local model: ${nextDetail}`;
     statusBar.show();
 }
@@ -288,6 +293,17 @@ export function initializeManagedEngine(context: vscode.ExtensionContext): Promi
     return installationPromise;
 }
 
+
+function getFreePort(): Promise<number> {
+  return new Promise((resolve, reject) => {
+    const server = net.createServer();
+    server.listen(0, "127.0.0.1", () => {
+      const port = (server.address() as net.AddressInfo).port;
+      server.close(() => resolve(port));
+    });
+    server.on("error", reject);
+  });
+}
 export async function startManagedEngine(context: vscode.ExtensionContext): Promise<string> {
     const runtime = selectRuntime(process.platform, process.arch);
     if (!runtime) {
@@ -304,12 +320,20 @@ export async function startManagedEngine(context: vscode.ExtensionContext): Prom
             if (!executable) {
                 throw new Error('Local model setup is incomplete. Retry the download.');
             }
-            const port = 8080;
+            const port = await getFreePort();
             const baseUrl = `http://127.0.0.1:${port}/v1`;
             const paths = storagePaths(context);
             server = spawn(executable, ['--model', paths.model, '--host', '127.0.0.1', '--port', String(port), '--ctx-size', '4096'], { windowsHide: true });
             server.on('error', (error: Error) => console.error('Markdown AI local runtime error:', error.message));
+            server.on('exit', () => {
+                activePort = undefined;
+                server = undefined;
+                serverPromise = undefined;
+                updateStatus('ready', 'Installed and ready to start.');
+            });
             await waitForServer(baseUrl, server);
+            activePort = port;
+            updateStatus('ready', `Running on port ${port}.`);
             return baseUrl;
         })().catch((error: unknown) => {
             serverPromise = undefined;
@@ -365,4 +389,7 @@ export function stopManagedEngine(): void {
     }
     server = undefined;
     serverPromise = undefined;
+    activePort = undefined;
 }
+
+

@@ -14,3 +14,14 @@ test('managed engine verifies resumable downloads and starts a separate runtime'
     assert.match(source, /spawn\(executable, \['--model'/);
     assert.match(source, /\.download/);
 });
+
+test('managed engine shows its dynamic local port only while running', () => {
+    assert.match(source, /let activePort: number \| undefined/);
+    assert.match(source, /Local model ready \(port \$\{activePort\}\)/);
+    assert.match(source, /activePort = port/);
+    assert.match(source, /activePort = undefined/);
+});
+
+test('managed engine removes its port when the runtime exits', () => {
+    assert.match(source, /server\.on\('exit', \(\) => \{\s*activePort = undefined;/);
+});
