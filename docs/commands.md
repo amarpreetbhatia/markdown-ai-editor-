@@ -36,6 +36,12 @@ Creates a standalone `SKILL.md` from the selected process or guidance. It includ
 
 For example, select notes describing how a team prepares release notes. The result can become a reusable skill with steps for gathering changes, drafting the notes, reviewing facts, and publishing.
 
+## Convert to AI Prompt Format
+
+Shortcut: ++ctrl+m++ then ++a++ (Windows/Linux), or ++cmd+m++ then ++a++ (macOS).
+
+Creates a reusable Markdown prompt with Goal, Context, Inputs, Instructions, Constraints, and Output Format. It preserves supplied facts and labels missing information as assumptions or open questions.
+
 ## Create PRD
 
 Shortcut: ++ctrl+m++ then ++p++ (Windows/Linux), or ++cmd+m++ then ++p++ (macOS).

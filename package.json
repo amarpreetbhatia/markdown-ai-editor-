@@ -1,8 +1,8 @@
 {
     "name":  "markdown-ai-editor",
     "displayName":  "Markdown AI Editor",
-    "description":  "Private, local Markdown and plain-text editing with a lightweight on-device AI model.",
-    "version":  "0.0.2",
+    "description":  "Private local Markdown refinement and AI-ready documents with on-device Qwen3.",
+    "version":  "0.0.3",
     "publisher":  "AmarpreetBhatia",
     "license":  "SEE LICENSE IN LICENSE",
     "pricing":  "Free",

@@ -25,6 +25,7 @@ markdown_extensions:
 
 nav:
   - Home: index.md
+  - Version 0.0.3: releases/0.0.3.md
   - First run: first-run.md
   - Managed local model: local-model.md
   - Use Ollama locally: ollama.md

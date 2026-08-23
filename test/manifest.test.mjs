@@ -74,12 +74,34 @@ test('managed model setup is enabled with clear first-run guidance', () => {
 });
 
 test('manifest identifies the Marketplace release and its public resources', () => {
+    assert.equal(packageJson.version, '0.0.3');
+    assert.match(packageJson.description, /Qwen3/);
     assert.equal(packageJson.publisher, 'AmarpreetBhatia');
     assert.equal(packageJson.license, 'SEE LICENSE IN LICENSE');
     assert.equal(packageJson.pricing, 'Free');
     assert.equal(packageJson.repository.url, 'https://github.com/amarpreetbhatia/markdown-ai-editor-.git');
     assert.equal(packageJson.bugs.url, 'https://github.com/amarpreetbhatia/markdown-ai-editor-/issues');
     assert.equal(packageJson.homepage, 'https://amarpreetbhatia.github.io/markdown-ai-editor-/');
+});
+
+test('version 0.0.3 documentation covers Qwen, prerequisites, and token hygiene', async () => {
+    const [readme, index, releaseNotes, localModel, commands, mkdocsConfig] = await Promise.all([
+        readFile(path.join(root, 'README.md'), 'utf8'),
+        readFile(path.join(root, 'docs', 'index.md'), 'utf8'),
+        readFile(path.join(root, 'docs', 'releases', '0.0.3.md'), 'utf8'),
+        readFile(path.join(root, 'docs', 'local-model.md'), 'utf8'),
+        readFile(path.join(root, 'docs', 'commands.md'), 'utf8'),
+        readFile(path.join(root, 'mkdocs.yml'), 'utf8'),
+    ]);
+
+    assert.match(readme, /Version 0\.0\.3/);
+    assert.match(index, /Prerequisites/);
+    assert.match(index, /token/i);
+    assert.match(releaseNotes, /Qwen3-0\.6B-Q8_0/);
+    assert.match(releaseNotes, /Convert to AI Prompt Format/);
+    assert.match(localModel, /dynamic port/);
+    assert.match(commands, /Convert to AI Prompt Format/);
+    assert.match(mkdocsConfig, /Version 0\.0\.3: releases\/0\.0\.3\.md/);
 });
 
 test('release documentation contains no VS Code scaffold placeholder', async () => {
@@ -106,6 +128,14 @@ test('README documents local VSIX packaging and installation', async () => {
     assert.match(readme, /npm run package/);
     assert.match(readme, /vsce package/);
     assert.match(readme, /code --install-extension markdown-ai-editor-\*\.vsix/);
+});
+
+test('VSIX excludes development-only agent and documentation artifacts', async () => {
+    const vscodeIgnore = await readFile(path.join(root, '.vscodeignore'), 'utf8');
+
+    for (const path of ['.agents/**', '.continue/**', '.kiro/**', '.kirograph/**', '.superpowers/**']) {
+        assert.ok(vscodeIgnore.includes(path));
+    }
 });
 
 test('documentation deployment follows the repository default branch', async () => {

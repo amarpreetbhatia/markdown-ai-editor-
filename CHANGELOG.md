@@ -6,6 +6,13 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 
 ## [Unreleased]
 
+## [0.0.3] - 2026-08-23
+
+- Replace the managed writing model with Qwen3 0.6B and update the pinned local runtime.
+- Add a Markdown AI Editor submenu, cross-platform shortcuts, and AI Skill, AI Prompt, and PRD transformations.
+- Show the dynamic localhost port while the managed server is running.
+- Update installation, privacy, and agent token-hygiene documentation.
+
 ## [0.0.2] - 2026-08-02
 
 - Add guided, consent-based setup for the local writing model.

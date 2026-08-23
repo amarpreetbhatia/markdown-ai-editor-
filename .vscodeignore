@@ -16,6 +16,11 @@ test/**
 **/*.ts
 **/.vscode-test.*
 .github/**
+.agents/**
+.continue/**
+.kiro/**
+.kirograph/**
+.superpowers/**
 docs/**
 site/**
 mkdocs.yml
